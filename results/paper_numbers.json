@@ -1,0 +1,684 @@
+{
+  "data": {
+    "source": "ACAG Surface PM2.5 V6.GL.03 (Washington University in St. Louis)",
+    "bucket": "s3://satpmdata/",
+    "licence": "CC BY 4.0",
+    "grid_resolution_deg": 0.01,
+    "asia_grid_shape": [
+      7000,
+      8000
+    ],
+    "lon_range": [
+      65.005,
+      144.995
+    ],
+    "lat_range": [
+      -9.995,
+      59.995
+    ],
+    "file_size_bytes": 91433645,
+    "year_used": 2015
+  },
+  "step1_design": {
+    "YRD4": {
+      "D_km": 1197.1,
+      "n_values": [
+        1290,
+        2410,
+        3438
+      ],
+      "raw_ratio_min": 5.0,
+      "raw_ratio_max": 5.0,
+      "raw_ratio_median": 5.0,
+      "raw_phi_km_median": 5985.5,
+      "raw_bound_any": true,
+      "detrend_ratio_min": 0.018,
+      "detrend_ratio_max": 0.021,
+      "detrend_ratio_median": 0.019,
+      "detrend_phi_km_min": 21.4,
+      "detrend_phi_km_max": 25.1,
+      "n_cells": 6
+    },
+    "MidYangtze": {
+      "D_km": 1742.0,
+      "n_values": [
+        1098,
+        2194,
+        3228
+      ],
+      "raw_ratio_min": 1.147,
+      "raw_ratio_max": 1.216,
+      "raw_ratio_median": 1.168,
+      "raw_phi_km_median": 2034.7,
+      "raw_bound_any": false,
+      "detrend_ratio_min": 0.009,
+      "detrend_ratio_max": 0.012,
+      "detrend_ratio_median": 0.012,
+      "detrend_phi_km_min": 16.1,
+      "detrend_phi_km_max": 20.3,
+      "n_cells": 6
+    },
+    "EastChina": {
+      "D_km": 4126.0,
+      "n_values": [
+        1230,
+        2312,
+        3397
+      ],
+      "raw_ratio_min": 0.307,
+      "raw_ratio_max": 0.344,
+      "raw_ratio_median": 0.326,
+      "raw_phi_km_median": 1343.6,
+      "raw_bound_any": false,
+      "detrend_ratio_min": 0.004,
+      "detrend_ratio_max": 0.005,
+      "detrend_ratio_median": 0.005,
+      "detrend_phi_km_min": 17.2,
+      "detrend_phi_km_max": 22.1,
+      "n_cells": 6
+    },
+    "Nationwide": {
+      "D_km": 6857.0,
+      "n_values": [
+        1398,
+        2575
+      ],
+      "raw_ratio_min": 0.209,
+      "raw_ratio_max": 0.325,
+      "raw_ratio_median": 0.267,
+      "raw_phi_km_median": 1831.4,
+      "raw_bound_any": false,
+      "detrend_ratio_min": 0.004,
+      "detrend_ratio_max": 0.004,
+      "detrend_ratio_median": 0.004,
+      "detrend_phi_km_min": 24.9,
+      "detrend_phi_km_max": 28.3,
+      "n_cells": 4
+    }
+  },
+  "step1_headline": {
+    "detrend_ratio_across_domains_min": 0.004,
+    "detrend_ratio_across_domains_max": 0.021,
+    "raw_ratio_across_domains_min": 0.209,
+    "raw_ratio_across_domains_max": 5.0,
+    "reference_province_level_ratio": [
+      0.88,
+      1.63
+    ],
+    "n_design_cells": 22
+  },
+  "fig1": {
+    "chart": "Fig1",
+    "yrd4_n_all": 3053,
+    "yrd4_spacing_km": 21.67,
+    "note": "Fig 1 图注与面板引用这两个数；与图件生成脚本同源。"
+  },
+  "step1b_identifiability": {
+    "EastChina_m35": {
+      "domain": "EastChina",
+      "grid_m": 35,
+      "n": 1225,
+      "spacing_km": 85.8,
+      "phi_true": [
+        10.0,
+        20.0,
+        50.0,
+        100.0,
+        200.0,
+        500.0,
+        1000.0,
+        2000.0
+      ],
+      "phi_est": [
+        7.9,
+        9.2,
+        44.3,
+        76.0,
+        171.0,
+        585.3,
+        572.9,
+        1490.3
+      ],
+      "recovered_ratio": [
+        0.79,
+        0.46,
+        0.886,
+        0.76,
+        0.855,
+        1.1706,
+        0.5729,
+        0.7451
+      ],
+      "bound_hit": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "MidYangtze_m33": {
+      "domain": "MidYangtze",
+      "grid_m": 33,
+      "n": 1089,
+      "spacing_km": 38.5,
+      "phi_true": [
+        10.0,
+        20.0,
+        50.0,
+        100.0,
+        200.0,
+        500.0,
+        1000.0,
+        2000.0
+      ],
+      "phi_est": [
+        13.7,
+        16.3,
+        39.6,
+        105.7,
+        203.2,
+        350.3,
+        298.8,
+        1377.4
+      ],
+      "recovered_ratio": [
+        1.37,
+        0.815,
+        0.792,
+        1.057,
+        1.016,
+        0.7006,
+        0.2988,
+        0.6887
+      ],
+      "bound_hit": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "Nationwide_m37": {
+      "domain": "Nationwide",
+      "grid_m": 37,
+      "n": 1369,
+      "spacing_km": 132.8,
+      "phi_true": [
+        10.0,
+        20.0,
+        50.0,
+        100.0,
+        200.0,
+        500.0,
+        1000.0,
+        2000.0
+      ],
+      "phi_est": [
+        21.6,
+        31.7,
+        43.0,
+        94.8,
+        185.5,
+        874.0,
+        979.7,
+        1877.8
+      ],
+      "recovered_ratio": [
+        2.16,
+        1.585,
+        0.86,
+        0.948,
+        0.9275,
+        1.748,
+        0.9797,
+        0.9389
+      ],
+      "bound_hit": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "Nationwide_m51": {
+      "domain": "Nationwide",
+      "grid_m": 51,
+      "n": 2601,
+      "spacing_km": 95.6,
+      "phi_true": [
+        10.0,
+        20.0,
+        50.0,
+        100.0,
+        200.0,
+        500.0,
+        1000.0,
+        2000.0
+      ],
+      "phi_est": [
+        34286.8,
+        34286.8,
+        45.0,
+        80.1,
+        197.3,
+        586.3,
+        784.6,
+        2730.6
+      ],
+      "recovered_ratio": [
+        3428.68,
+        1714.34,
+        0.9,
+        0.801,
+        0.9865,
+        1.1726,
+        0.7846,
+        1.3653
+      ],
+      "bound_hit": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "YRD4_m36": {
+      "domain": "YRD4",
+      "grid_m": 36,
+      "n": 1296,
+      "spacing_km": 24.1,
+      "phi_true": [
+        10.0,
+        20.0,
+        50.0,
+        100.0,
+        200.0,
+        500.0,
+        1000.0,
+        2000.0
+      ],
+      "phi_est": [
+        8.2,
+        25.7,
+        27.8,
+        119.8,
+        226.6,
+        477.8,
+        581.9,
+        1190.7
+      ],
+      "recovered_ratio": [
+        0.82,
+        1.285,
+        0.556,
+        1.198,
+        1.133,
+        0.9556,
+        0.5819,
+        0.5954
+      ],
+      "bound_hit": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "step1b_headline": {
+    "nationwide_spacing_km": 95.6,
+    "nationwide_failure_phi_true": [
+      10,
+      20
+    ],
+    "nationwide_failure_phi_est": [
+      34286.8,
+      34286.8
+    ],
+    "nationwide_failure_bound": [
+      true,
+      true
+    ],
+    "n_ident_cells": 40
+  },
+  "step1c_stability": {
+    "YRD4": {
+      "raw_ratio": 4.999999999999999,
+      "window": {
+        "0.5": 0.0076996994592359,
+        "1.0": 0.0178869909991464,
+        "2.0": 0.0595840360673989
+      },
+      "offset_ratio": [
+        0.0178869909991464,
+        0.0175145231206502,
+        0.0193139661991476
+      ],
+      "offset_ratio_cv": 0.0425214664042396
+    },
+    "MidYangtze": {
+      "raw_ratio": 1.1472029293754298,
+      "window": {
+        "0.5": 1.8760458183340392,
+        "1.0": 0.0116629372195173,
+        "2.0": 0.0318926635708575
+      },
+      "offset_ratio": [
+        0.0116629372195173,
+        0.0116458681696661,
+        0.0110162790663852
+      ],
+      "offset_ratio_cv": 0.026298120099384596
+    },
+    "EastChina": {
+      "raw_ratio": 0.3256608245361832,
+      "window": {
+        "0.5": 0.0044793651351779,
+        "1.0": 0.0045546820548384,
+        "2.0": 0.0124558225073822
+      },
+      "offset_ratio": [
+        0.0045546820548384,
+        0.0041332868625383,
+        0.0043064808444775
+      ],
+      "offset_ratio_cv": 0.03992625558274416
+    },
+    "Nationwide": {
+      "raw_ratio": 0.3254315823717519,
+      "window": {
+        "0.5": 0.004239116256388,
+        "1.0": 0.0036327869696079,
+        "2.0": 0.0086018045618442
+      },
+      "offset_ratio": [
+        0.0036327869696079,
+        0.0029917045207773,
+        0.1182576995632679
+      ],
+      "offset_ratio_cv": 1.301701343736437
+    }
+  },
+  "step1c_headline": {
+    "offset_cv_max": 1.301701343736437,
+    "midyangtze_win05_ratio": 1.8760458183340392,
+    "midyangtze_raw_ratio": 1.1472029293754298
+  },
+  "step2_scenarios": {
+    "YRD4|detrend|interp": {
+      "scenario": "interp",
+      "domain": "YRD4",
+      "prep": "detrend",
+      "baseline_cov": 0.9063829787234042,
+      "baseline_width": 6.7569461381860805,
+      "baseline_cell_sd": 0.0824407624415152,
+      "baseline_cell_in": 0.9090909090909092,
+      "n_eta_tested": 7,
+      "best_eta": "4phi",
+      "best_eta_mult": 4.0,
+      "best_cov": 0.9358428805237315,
+      "best_cell_sd": 0.0460388952050411,
+      "best_cell_in": 0.9696969696969696,
+      "cell_sd_reduction_pct": -44.2,
+      "width_ratio": 1.0699,
+      "inf_frac": 0.0,
+      "exploded_grids": 3,
+      "max_inf_frac": 1.0
+    },
+    "YRD4|raw|interp": {
+      "scenario": "interp",
+      "domain": "YRD4",
+      "prep": "raw",
+      "baseline_cov": 0.9034369885433716,
+      "baseline_width": 6.754456268678607,
+      "baseline_cell_sd": 0.0829138524638368,
+      "baseline_cell_in": 0.9090909090909092,
+      "n_eta_tested": 7,
+      "best_eta": "0.5phi",
+      "best_eta_mult": 0.5,
+      "best_cov": 0.9037643207855974,
+      "best_cell_sd": 0.0827619468652182,
+      "best_cell_in": 0.9090909090909092,
+      "cell_sd_reduction_pct": -0.2,
+      "width_ratio": 1.0005,
+      "inf_frac": 0.0,
+      "exploded_grids": 0,
+      "max_inf_frac": 0.0
+    },
+    "EastChina|detrend|interp": {
+      "scenario": "interp",
+      "domain": "EastChina",
+      "prep": "detrend",
+      "baseline_cov": 0.91414309484193,
+      "baseline_width": 8.90823114568281,
+      "baseline_cell_sd": 0.0770164015668986,
+      "baseline_cell_in": 0.8285714285714286,
+      "n_eta_tested": 7,
+      "best_eta": "16phi",
+      "best_eta_mult": 16.0,
+      "best_cov": 0.9337770382695508,
+      "best_cell_sd": 0.0433684878975443,
+      "best_cell_in": 1.0,
+      "cell_sd_reduction_pct": -43.7,
+      "width_ratio": 1.0978,
+      "inf_frac": 0.0026622296173044,
+      "exploded_grids": 5,
+      "max_inf_frac": 0.8009983361064892
+    },
+    "EastChina|raw|interp": {
+      "scenario": "interp",
+      "domain": "EastChina",
+      "prep": "raw",
+      "baseline_cov": 0.9168053244592346,
+      "baseline_width": 10.215690030927584,
+      "baseline_cell_sd": 0.0771996649811955,
+      "baseline_cell_in": 0.8857142857142857,
+      "n_eta_tested": 7,
+      "best_eta": "0.5phi",
+      "best_eta_mult": 0.5,
+      "best_cov": 0.9254575707154742,
+      "best_cell_sd": 0.0579491559449965,
+      "best_cell_in": 0.9714285714285714,
+      "cell_sd_reduction_pct": -24.9,
+      "width_ratio": 1.0537,
+      "inf_frac": 0.0,
+      "exploded_grids": 0,
+      "max_inf_frac": 0.0
+    },
+    "Nationwide|detrend|interp": {
+      "scenario": "interp",
+      "domain": "Nationwide",
+      "prep": "detrend",
+      "baseline_cov": 0.9092846270928464,
+      "baseline_width": 7.984381495290134,
+      "baseline_cell_sd": 0.1034033402185155,
+      "baseline_cell_in": 0.8235294117647058,
+      "n_eta_tested": 7,
+      "best_eta": "16phi",
+      "best_eta_mult": 16.0,
+      "best_cov": 0.9220700152207002,
+      "best_cell_sd": 0.0738509286267015,
+      "best_cell_in": 0.8823529411764706,
+      "cell_sd_reduction_pct": -28.6,
+      "width_ratio": 1.0387,
+      "inf_frac": 0.0006088280060882,
+      "exploded_grids": 5,
+      "max_inf_frac": 0.7342465753424657
+    },
+    "Nationwide|raw|interp": {
+      "scenario": "interp",
+      "domain": "Nationwide",
+      "prep": "raw",
+      "baseline_cov": 0.8983257229832572,
+      "baseline_width": 11.128267822583826,
+      "baseline_cell_sd": 0.1133125956492916,
+      "baseline_cell_in": 0.7647058823529411,
+      "n_eta_tested": 7,
+      "best_eta": "0.5phi",
+      "best_eta_mult": 0.5,
+      "best_cov": 0.9220700152207002,
+      "best_cell_sd": 0.0778773241360879,
+      "best_cell_in": 0.9411764705882352,
+      "cell_sd_reduction_pct": -31.3,
+      "width_ratio": 1.0484,
+      "inf_frac": 0.0,
+      "exploded_grids": 0,
+      "max_inf_frac": 0.0
+    },
+    "YRD4|detrend|extrap": {
+      "scenario": "extrap",
+      "domain": "YRD4",
+      "prep": "detrend",
+      "baseline_cov": 0.8863413036357681,
+      "baseline_width": 9.428059018601926,
+      "baseline_cell_sd": 0.0959795924118065,
+      "baseline_cell_in": 0.8787878787878788,
+      "n_eta_tested": 7,
+      "best_eta": "8phi",
+      "best_eta_mult": 8.0,
+      "best_cov": 0.9128725843432688,
+      "best_cell_sd": 0.0730289502048222,
+      "best_cell_in": 0.9090909090909092,
+      "cell_sd_reduction_pct": -23.9,
+      "width_ratio": 1.0569,
+      "inf_frac": 0.0,
+      "exploded_grids": 4,
+      "max_inf_frac": 1.0
+    },
+    "YRD4|raw|extrap": {
+      "scenario": "extrap",
+      "domain": "YRD4",
+      "prep": "raw",
+      "baseline_cov": 0.903701277432034,
+      "baseline_width": 14.669563264146436,
+      "baseline_cell_sd": 0.166480024430271,
+      "baseline_cell_in": 0.8181818181818182,
+      "n_eta_tested": 7,
+      "best_eta": "0.5phi",
+      "best_eta_mult": 0.5,
+      "best_cov": 0.903701277432034,
+      "best_cell_sd": 0.166480024430271,
+      "best_cell_in": 0.8181818181818182,
+      "cell_sd_reduction_pct": 0.0,
+      "width_ratio": 1.0004,
+      "inf_frac": 0.0,
+      "exploded_grids": 0,
+      "max_inf_frac": 0.0
+    },
+    "EastChina|detrend|extrap": {
+      "scenario": "extrap",
+      "domain": "EastChina",
+      "prep": "detrend",
+      "baseline_cov": 0.8912537412703692,
+      "baseline_width": 8.818815802817186,
+      "baseline_cell_sd": 0.0904830000646705,
+      "baseline_cell_in": 0.8285714285714286,
+      "n_eta_tested": 7,
+      "best_eta": "inf",
+      "best_eta_mult": null,
+      "best_cov": 0.8915862986365148,
+      "best_cell_sd": 0.0904134168425689,
+      "best_cell_in": 0.8285714285714286,
+      "cell_sd_reduction_pct": -0.1,
+      "width_ratio": 1.0022,
+      "inf_frac": 0.0,
+      "exploded_grids": 6,
+      "max_inf_frac": 0.9504489524442966
+    },
+    "EastChina|raw|extrap": {
+      "scenario": "extrap",
+      "domain": "EastChina",
+      "prep": "raw",
+      "baseline_cov": 0.8972397738609911,
+      "baseline_width": 24.83023531714842,
+      "baseline_cell_sd": 0.1314889753531371,
+      "baseline_cell_in": 0.8857142857142857,
+      "n_eta_tested": 7,
+      "best_eta": "0.5phi",
+      "best_eta_mult": 0.5,
+      "best_cov": 0.913867642168274,
+      "best_cell_sd": 0.1226327205892625,
+      "best_cell_in": 0.8857142857142857,
+      "cell_sd_reduction_pct": -6.7,
+      "width_ratio": 1.0881,
+      "inf_frac": 0.0053209178583305,
+      "exploded_grids": 0,
+      "max_inf_frac": 0.0053209178583305
+    },
+    "Nationwide|detrend|extrap": {
+      "scenario": "extrap",
+      "domain": "Nationwide",
+      "prep": "detrend",
+      "baseline_cov": 0.8979902557856273,
+      "baseline_width": 8.234606736478643,
+      "baseline_cell_sd": 0.1231628916045422,
+      "baseline_cell_in": 0.7352941176470589,
+      "n_eta_tested": 7,
+      "best_eta": "inf",
+      "best_eta_mult": null,
+      "best_cov": 0.8979902557856273,
+      "best_cell_sd": 0.1231628916045422,
+      "best_cell_in": 0.7352941176470589,
+      "cell_sd_reduction_pct": 0.0,
+      "width_ratio": 1.0,
+      "inf_frac": 0.0,
+      "exploded_grids": 6,
+      "max_inf_frac": 0.6336784409257004
+    },
+    "Nationwide|raw|extrap": {
+      "scenario": "extrap",
+      "domain": "Nationwide",
+      "prep": "raw",
+      "baseline_cov": 0.7944579780755177,
+      "baseline_width": 30.21236054045299,
+      "baseline_cell_sd": 0.2582191224719961,
+      "baseline_cell_in": 0.6176470588235294,
+      "n_eta_tested": 7,
+      "best_eta": "0.5phi",
+      "best_eta_mult": 0.5,
+      "best_cov": 0.8669305724725944,
+      "best_cell_sd": 0.1912738616426297,
+      "best_cell_in": 0.7941176470588235,
+      "cell_sd_reduction_pct": -25.9,
+      "width_ratio": 1.2154,
+      "inf_frac": 0.0898294762484774,
+      "exploded_grids": 0,
+      "max_inf_frac": 0.0898294762484774
+    }
+  },
+  "step2_headline": {
+    "n_scenario_grids": 96,
+    "interp_cells_with_gain": 5,
+    "interp_cells_total": 6,
+    "interp_gain_min_pct": -44.2,
+    "interp_gain_max_abs_pct": 44.2,
+    "interp_width_ratio_max": 1.0978,
+    "extrap_cells_with_gain": 3,
+    "extrap_cells_total": 6,
+    "extrap_width_ratio_max": 1.2154,
+    "h3_width_cap": 1.1,
+    "no_setting_below_unity": false,
+    "width_ratio_below_unity_count": 1,
+    "width_ratio_grids_checked": 80
+  }
+}
