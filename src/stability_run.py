@@ -3,12 +3,12 @@
 """
 Sensitivity of the fitted correlation length to window and lattice phase.
 import os
-核心操作是"剥离大尺度趋势"，必须证明结论不是由这一个参数凑出来的。
-扫描两个轴（每域）：
-  window : 去趋势窗口 0.5 / 1.0 / 2.0 度（约 55 / 111 / 222 km）
-  offset : 点阵相位 0 / 0.33 / 0.67（避免"网格对齐"造成的偶然性）
-另加 raw 基准作对照。
-增量落盘（每格写完即 flush），中途挂掉不丢。
+The core operation is removing the large-scale trend; the conclusions must not hinge on
+this single parameter. Two axes are scanned per domain:
+  window : detrending window 0.5 / 1.0 / 2.0 deg (about 55 / 111 / 222 km)
+  offset : lattice phase 0 / 0.33 / 0.67 (guards against lattice-alignment artifacts)
+A raw baseline is included as a control.
+Incremental writes to disk (flush after each setting); nothing lost if the run dies midway.
 """
 import os, sys, csv, gc, time, traceback
 import numpy as np
@@ -63,7 +63,7 @@ def main():
         P = sample_points(mask, lat, lon, bbox, N_STAB, offset=(0.0, 0.0))
         z_raw = pm[P["rows"], P["cols"]].astype(np.float64)
 
-        # (0) raw 基准
+        # (0) raw baseline
         r = fit_gp(P["xn"], P["yn"], z_raw, P["D_km"])
         r.update(domain=dname, axis="none", setting="raw", prep="raw",
                  n_actual=P["n_actual"], mean_spacing_km=round(P["mean_spacing_km"], 2))
@@ -72,7 +72,7 @@ def main():
         print("  [stab] %-11s raw        phi=%8.1f ratio=%.4f" %
               (dname, r["phi_km"], r["ratio_phi_domain"]), flush=True)
 
-        # (a) window 轴
+        # (a) window axis
         for wd in WIN:
             lm = det.sample(P["rows"], P["cols"], wd)
             r = fit_gp(P["xn"], P["yn"], z_raw - lm, P["D_km"])
@@ -84,7 +84,7 @@ def main():
                   (dname, wd, r["phi_km"], r["ratio_phi_domain"], r["bound_hit"]), flush=True)
             del lm; gc.collect()
 
-        # (b) offset 轴
+        # (b) offset axis
         for off in OFF:
             Q = sample_points(mask, lat, lon, bbox, N_STAB, offset=off)
             zq = pm[Q["rows"], Q["cols"]].astype(np.float64)

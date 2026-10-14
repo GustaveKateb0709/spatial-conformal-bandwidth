@@ -4,15 +4,15 @@
 Spatial covariance estimation on a 0.01-deg gridded field.
 import os
 =======================
-问题：在 0.01deg 网格上做指数协方差 GP 拟合，检验"相关长度 phi 相对域对角
-phi/domain 是否随域放大而系统性下降、并稳定地掉到 1 以下"。
-模型：C(h) = sigma^2 * exp(-h/phi) + tau^2 * 1{h=0}
+Goal: refit the exponential-covariance GP on the 0.01-deg grid and test whether the
+ratio phi/domain declines systematically as the domain grows and stabilizes below 1.
+Model: C(h) = sigma^2 * exp(-h/phi) + tau^2 * 1{h=0}
      gamma(h) = tau^2 + sigma^2 (1 - exp(-h/phi))
-参数用最大似然（负对数边际似然最小化, L-BFGS-B, log 变换）。
-归一化：坐标先转为等距圆柱投影下的 km（域中心纬度 cos 因子），再整体除以域对角 D_km，
-         于是域对角在拟合坐标里 = 1，phi_norm 直接等于 phi/domain_diag。
-可复现：随机种子固定（本脚本点集用规则网格，仅 fudge offset，无需随机抽样）。
-内存：任何时刻不保留多份 3000x3000 float64 稠密矩阵；每个 fit 结束即 del + gc。
+Parameters by maximum likelihood (negative log marginal likelihood, L-BFGS-B,
+log-transformed). Normalization: coordinates converted to equirectangular km (cos
+factor at domain-center lat), then divided by D_km; phi_norm == phi/domain_diag.
+Reproducibility: fixed random seed (regular-lattice point sets, only a fudge offset).
+Memory: never hold more than one 3000x3000 float64 dense matrix; del + gc after each fit.
 """
 import os, sys, json, gc, time, zipfile, traceback
 import numpy as np
@@ -40,10 +40,10 @@ np.random.seed(SEED)
 # ------------------------------------------------------------------ domains
 DOMAINS = {
     # name : (lon0, lon1, lat0, lat1, mask_kind)
-    "YRD4"      : (114.9, 123.1, 27.0, 35.2, "provinces"),   # 长三角四省 (Shanghai/Jiangsu/Zhejiang/Anhui)
-    "MidYangtze": (110.0, 123.0, 25.0, 36.0, "china"),       # 长江中下游
-    "EastChina" : (105.0, 135.0, 18.0, 45.0, "china"),       # 中国东部
-    "Nationwide": (73.0,  135.0, 18.0, 54.0, "china"),       # 全国
+    "YRD4"      : (114.9, 123.1, 27.0, 35.2, "provinces"),   # YRD four provinces (Shanghai/Jiangsu/Zhejiang/Anhui)
+    "MidYangtze": (110.0, 123.0, 25.0, 36.0, "china"),       # middle and lower Yangtze reaches
+    "EastChina" : (105.0, 135.0, 18.0, 45.0, "china"),       # eastern China
+    "Nationwide": (73.0,  135.0, 18.0, 54.0, "china"),       # nationwide
 }
 YRD_PROV = {"Shanghai", "Jiangsu", "Zhejiang", "Anhui"}
 
@@ -94,14 +94,14 @@ def rasterize(outers, inners, geo):
     for r in inners:
         if len(r) >= 3:
             d.polygon(to_px(r), fill=0)
-    # 图像 row0 在顶部=lat_max；翻转为与 netCDF 一致的升序行( row0=lat_min )，
-    # 这样 mask[row,col] 与 pm[row,col]、lat[row]、lon[col] 完全对齐。
+    # Image row0 is at the top = lat_max; flip to ascending rows (row0 = lat_min) to
+    # match netCDF, so mask[row,col] aligns exactly with pm[row,col], lat[row], lon[col].
     return np.array(img, dtype=bool)[::-1, :]
 
 # ------------------------------------------------------------------ GP MLE
 def _nll_grad(d, z, theta, n):
-    """C = s2*R + tau2*I (R=exp(-d/phi), R_ii=1)。精确 profile 掉常数均值。
-    返回 (f, grad)。grad 解析式，M = A - q qᵀ + g gᵀ/S，A=C^{-1}, g=A1, q=A r。"""
+    """C = s2*R + tau2*I (R=exp(-d/phi), R_ii=1). The constant mean is profiled out exactly.
+    Returns (f, grad). Analytic grad: M = A - q qᵀ + g gᵀ/S, A=C^{-1}, g=A1, q=A r."""
     ls2, lphi, ltau = theta
     s2 = np.exp(ls2); phi = np.exp(lphi); tau2 = np.exp(ltau)
     R = np.exp(-d / phi)
@@ -141,11 +141,11 @@ def _nll_grad(d, z, theta, n):
 
 
 def fit_gp(x_km, y_km, z, D_km, seeds=(0.08, 0.5), maxiter=80):
-    """x_km,y_km 已按 D_km 归一化；z 为观测。返回 dict。"""
+    """x_km, y_km already normalized by D_km; z holds the observations. Returns a dict."""
     n = len(z)
     start = time.time()
     xy = np.column_stack([x_km, y_km])
-    d = cdist(xy, xy, "euclidean")           # n x n float64（唯一一份）
+    d = cdist(xy, xy, "euclidean")           # n x n float64 (the only copy)
     z = np.asarray(z, dtype=np.float64)
 
     PHI_LO, PHI_HI = 1e-3, 5.0
@@ -171,7 +171,7 @@ def fit_gp(x_km, y_km, z, D_km, seeds=(0.08, 0.5), maxiter=80):
     s2 = float(np.exp(res.x[0])); phi = float(np.exp(res.x[1])); tau2 = float(np.exp(res.x[2]))
     bound_hit = bool(phi <= PHI_LO * 1.5 or phi >= PHI_HI / 1.5)
 
-    # 条件数：用 chol 对角比值的平方做廉价代理（避免 O(n^3) SVD 与大内存峰值）
+    # Condition number: cheap proxy via squared Cholesky-diagonal ratio (avoids O(n^3) SVD)
     try:
         R = np.exp(-d / phi); C = s2 * R
         dg = s2 + tau2; C.flat[::n + 1] = dg + 1e-9 * dg
@@ -200,17 +200,17 @@ def fit_gp(x_km, y_km, z, D_km, seeds=(0.08, 0.5), maxiter=80):
 
 # ------------------------------------------------------------------ local mean (detrend) via coarse binning
 class Detrender:
-    """在粗网格(0.05deg)上算陆地局部均值，再双线性采样。"""
+    """Local land mean on a coarse grid (0.05 deg), sampled bilinearly."""
     def __init__(self, pm, landmask, lat, lon, cf=5):
         H, W = pm.shape
         self.cf = cf
         self.H, self.W = H, W
         Hc, Wc = H // cf, W // cf
         self.Hc, self.Wc = Hc, Wc
-        # 分块聚合，避免任何时刻出现全尺寸 float64 副本（~448MB）
+        # Block aggregation; avoids full-size float64 copies (~448MB) at any time
         sums = np.zeros((Hc, Wc), dtype=np.float64)
         cnts = np.zeros((Hc, Wc), dtype=np.float64)
-        blk = 100  # 粗网格行块
+        blk = 100  # coarse-grid row block
         for r0 in range(0, Hc, blk):
             r1 = min(r0 + blk, Hc)
             sub = pm[r0 * cf:r1 * cf, :Wc * cf].astype(np.float64)
@@ -273,7 +273,7 @@ def sample_points(mask, lat, lon, bbox, n, offset=(0.0, 0.0), cand_stride=5):
     Wd, Ht = X1 - X0, Y1 - Y0
     D_km = float(np.hypot(Wd, Ht))
 
-    # 点阵密度按陆地占比放大，使“落在陆地上的点数≈目标 n”
+    # Scale lattice density by land fraction so the number of land points ~= target n
     m = int(np.ceil(np.sqrt(n / max(land_frac, 1e-3))))
     gx = np.linspace(X0, X1, m + 2)[1:-1]
     gy = np.linspace(Y0, Y1, m + 2)[1:-1]
@@ -289,7 +289,7 @@ def sample_points(mask, lat, lon, bbox, n, offset=(0.0, 0.0), cand_stride=5):
     sel = pts[idx]
     sel_rows = RR[idx]; sel_cols = CC[idx]
 
-    # 拟合坐标：以域对角 D_km 归一化
+    # Fitting coordinates: normalized by the domain diagonal D_km
     xc = sel[:, 0].mean(); yc = sel[:, 1].mean()
     xn = (sel[:, 0] - xc) / D_km
     yn = (sel[:, 1] - yc) / D_km
@@ -370,7 +370,7 @@ def main():
     for dname, (lon0, lon1, lat0, lat1, kind) in DOMAINS.items():
         bbox = (lon0, lon1, lat0, lat1)
         mask = masks[kind]
-        # (a) 换 n（detrend, offset0, win1）
+        # (a) vary n (detrend, offset0, win1)
         for n in NS:
             P = sample_points(mask, lat, lon, bbox, n, offset=(0, 0))
             z_raw = pm[P["rows"], P["cols"]].astype(np.float64)
@@ -381,7 +381,7 @@ def main():
                          offset="0,0", window_deg=1.0, axis="n")
                 stab_rows.append(r)
             del z_raw, lm; gc.collect()
-        # (b) 换 offset（detrend, n=2000, win1）
+        # (b) vary offset (detrend, n=2000, win1)
         for off in OFFSETS:
             P = sample_points(mask, lat, lon, bbox, N_STAB, offset=off)
             z_raw = pm[P["rows"], P["cols"]].astype(np.float64)
@@ -391,7 +391,7 @@ def main():
                      offset=f"{off[0]},{off[1]}", window_deg=1.0, axis="offset")
             stab_rows.append(r)
             del z_raw, lm; gc.collect()
-        # (c) 换 window（detrend, n=2000, offset0）
+        # (c) vary window (detrend, n=2000, offset0)
         P = sample_points(mask, lat, lon, bbox, N_STAB, offset=(0, 0))
         z_raw = pm[P["rows"], P["cols"]].astype(np.float64)
         for wd in WINDOWS:

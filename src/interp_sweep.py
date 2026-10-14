@@ -3,13 +3,17 @@
 """
 Interpolation design with a bandwidth scan (independent implementation).
 import os
-为什么补这一步
---------------
-整块空间留出（外推）的结果显示：去趋势后 φ 变小，核窄到在留出的整块里几乎没有标定点，
-加权分位数无解、区间变成无穷宽。但 Mao et al. (2024) 的理论前提是 **infill asymptotics**
-——目标点附近有标定点。外推场景根本不满足这个前提，用它评判该方法不公平。
-所以本脚本做内插场景：随机留出（测试点与标定点空间交错），并扫描核带宽 η。
-主指标（修正后）：**条件覆盖**（域切成 5x5 格，看格间覆盖率的离散度），宽度作为代价。
+Why this step was added
+-----------------------
+The block hold-out results (extrapolation) show: after detrending, phi shrinks and the
+kernel narrows until the held-out block contains almost no calibration points; the
+weighted quantile is undefined and intervals become infinitely wide. But the theory of
+Mao et al. (2024) presumes **infill asymptotics** -- calibration points near the target.
+Extrapolation violates that premise, so judging the method on it is unfair. This script
+therefore runs an interpolation setting: random hold-out (test and calibration points
+spatially interleaved), scanning the kernel bandwidth eta. Main metric (revised):
+**conditional coverage** (domain cut into a 5x5 grid; dispersion of per-cell coverage),
+with interval width as the cost.
 """
 import os, sys, gc, time, csv
 import numpy as np
@@ -41,7 +45,7 @@ def append(row, path=CSV):
 
 
 def gap_metrics(Xte, covered, K=5, min_per=8):
-    """把测试点按空间分位切成 KxK 格，返回格间覆盖率的离散度。"""
+    """Cut test points into a KxK grid by spatial quantiles; return the dispersion of per-cell coverage."""
     if len(Xte) < K * K * min_per:
         return np.nan, np.nan, np.nan, np.nan, 0
     q = np.linspace(0, 1, K + 1)[1:-1]
@@ -87,7 +91,7 @@ def main():
                 mte, ste = pred[len(ca):], sd[len(ca):]
                 V = np.abs(y[ca] - mca) / sca
 
-                # 到最近标定点的距离（内插程度的证据）
+                # distance to the nearest calibration point (evidence of the interpolation regime)
                 from scipy.spatial import cKDTree
                 dnn = cKDTree(X[ca]).query(X[te], k=1)[0]
                 nn_med = float(np.median(dnn) * D_km)
@@ -118,7 +122,7 @@ def main():
                                 ratio_mean=round(ratio, 4) if ratio == ratio else np.nan,
                                 secs=round(time.time() - t0, 1))
 
-                # 等权基线（tag=inf）
+                # equal-weight baseline (tag=inf)
                 append(rec(1.0, np.inf, np.full(len(te), tG), "baseline"))
                 print("  [%s/%s r%d] baseline  cov=%.3f gapSD=%.3f band=%.2f nn=%.0fkm" %
                       (dname, prep, rep, covG_all.mean(),

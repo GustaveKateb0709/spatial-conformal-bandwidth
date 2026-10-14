@@ -4,26 +4,31 @@
 Spatially weighted versus equal-weight conformal intervals.
 import os
 =============================================================
-模型：GP，指数协方差 C(h)=sigma^2 exp(-h/phi)+tau^2 1{h=0}，参数最大似然。
-坐标按域对角归一化。
-流程（split conformal，空间分块留出）：
-  - 域内点切 BxB 粗块，依次留一块作测试；其余块随机 70% 训练 / 30% 标定（种子固定）。
-  - 用“仅训练集”拟合 GP -> 在标定点算非一致性分数 V_i=|y_i-mean_i|/sd_i。
-  - 等权基线 GSCP： t_G = V 的第 ceil((m+1)(1-alpha)) 次序统计量。
-  - 空间加权 sLSCP： 核 K(d)=exp(-(d/eta)^2)，eta=2phi；对每个测试点按权重取加权分位数 t_s。
-       p_j = w_j/(sum_j w_j + 1)，自身项 p_0=1/(sum w+1) 作为“+∞ 处的质量”
-       （这是加权共形预测的标准写法；把它并入有限累计会整体下移一个次序统计量、
-        并破坏“等权退化”恒等式，故不作为有限累计的一部分）。
-  - 区间 = mean(s) ± t * sd(s)，alpha=0.10。
-自检（合成数据）：两种方法的无条件覆盖率都须落在 90%±2%；且 eta->∞（等权）时
-              t_s 必须与 t_G 完全相同（逐点相等）。
+Model: GP with exponential covariance C(h)=sigma^2 exp(-h/phi)+tau^2 1{h=0};
+maximum-likelihood parameters; coordinates normalized by the domain diagonal.
+Procedure (split conformal with spatial block hold-out):
+  - Cut domain points into coarse BxB blocks; hold out one block at a time as test;
+    the remaining blocks are randomly split 70% training / 30% calibration (fixed seed).
+  - Fit the GP on the training set only -> nonconformity scores at calibration points,
+    V_i=|y_i-mean_i|/sd_i.
+  - Equal-weight baseline GSCP: t_G = the ceil((m+1)(1-alpha))-th order statistic of V.
+  - Spatially weighted sLSCP: kernel K(d)=exp(-(d/eta)^2), eta=2phi; take the weighted
+    quantile t_s per test point.
+       p_j = w_j/(sum_j w_j + 1); the self term p_0=1/(sum w+1) is the "mass at +inf"
+       (standard in weighted conformal prediction; folding it into the finite cumulative
+        sum would shift every order statistic down by one and break the equal-weight
+        degeneracy identity, so it is not part of the finite cumulative sum).
+  - Interval = mean(s) ± t * sd(s), alpha=0.10.
+Self-test (synthetic data): unconditional coverage of both methods must fall within
+              90%±2%; and at eta->inf (equal weights) t_s must equal t_G exactly
+              (pointwise).
 """
 import os, sys, json, gc, time, csv
 import numpy as np
 
 P1 = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, P1)
-import fit_gp_variogram as M                     # 复用拟合/采样/去趋势/掩膜函数
+import fit_gp_variogram as M                     # reuse the fit/sampling/detrend/mask helpers
 from scipy.spatial.distance import cdist
 
 OUT = os.path.dirname(os.path.abspath(__file__))
@@ -35,7 +40,7 @@ np.random.seed(SEED)
 
 # ============================================================ core
 def gp_train_predict(xtr, ytr, xq, seeds=(0.08, 0.5), maxiter=80):
-    """训练集拟合 GP（复用 fit_gp 的模型/初值），返回 (pred_mean, pred_sd, fit_dict)。"""
+    """Fit the GP on the training set (reuses the fit_gp model/inits); returns (pred_mean, pred_sd, fit_dict)."""
     r = M.fit_gp(xtr[:, 0], xtr[:, 1], ytr, 1.0, seeds=seeds, maxiter=maxiter)
     s2, phi, tau2 = r["sigma2"], r["phi_norm"], r["tau2"]
     n = len(ytr)
@@ -70,7 +75,7 @@ def gscp_t(V, alpha=ALPHA):
 
 
 def slscp_t(V, xtest, xcal, eta, alpha=ALPHA):
-    """返回每个测试点的加权分位数 t_s（数组）。"""
+    """Return the weighted quantile t_s per test point (array)."""
     order = np.argsort(V)
     Vs = V[order]
     Dtc = cdist(xtest, xcal)
@@ -96,7 +101,7 @@ def assign_blocks(X, B=2):
 
 def run_one(X, y, B=2, alpha=ALPHA, refit=True, phi_override=None, eta_override=None,
             rng=None):
-    """在给定点集 (X,y) 上跑 BxB 分块留出，返回逐折结果列表。"""
+    """Run BxB block hold-out on the given points (X, y); return a list of per-fold results."""
     rng = np.random.default_rng(SEED) if rng is None else rng
     blk = assign_blocks(X, B)
     folds = []
@@ -151,7 +156,7 @@ def run_one(X, y, B=2, alpha=ALPHA, refit=True, phi_override=None, eta_override=
 
 
 def gp_predict_fixed(xtr, ytr, xq, ref_params):
-    """用给定 phi（归一化）预测（sigma2/tau2 由训练集矩估计，仅自检用）。"""
+    """Predict with a given (normalized) phi; sigma2/tau2 from training-set moment estimates (self-test only)."""
     phi = ref_params
     v = np.var(ytr)
     s2, tau2 = 0.9 * v, 0.1 * v
@@ -183,7 +188,7 @@ def selftest(R=15, B=3, grid=45, phi_true=0.2, s2_true=4.0, tau2_true=0.5):
     path = os.path.join(OUT, "selftest.csv")
     if os.path.exists(path):
         os.remove(path)
-    # 规则网格 [0,1]^2
+    # regular grid on [0,1]^2
     g = np.linspace(0, 1, grid)
     X = np.array([[a, b] for b in g for a in g], dtype=float)
     covG_all, covS_all, rat_all = [], [], []
@@ -201,7 +206,7 @@ def selftest(R=15, B=3, grid=45, phi_true=0.2, s2_true=4.0, tau2_true=0.5):
             covG_all.append(f["cov_G"]); covS_all.append(f["cov_S"])
             if np.isfinite(f["ratio_finite"]):
                 rat_all.append(f["ratio_finite"])
-        # 退化检验：eta 极大 -> t_s 应逐点等于 t_G
+        # degeneracy check: eta very large -> t_s must equal t_G pointwise
         blk = assign_blocks(X, B)
         for b in np.unique(blk):
             test = np.where(blk == b)[0]; rest = np.where(blk != b)[0]
@@ -277,7 +282,7 @@ def real_run(domains=("YRD4", "EastChina", "Nationwide"), N_TARGET=2600, B=3, wi
         for prep, y in (("detrend", dd["z_det"]), ("raw", dd["z_raw"])):
             t0 = time.time()
             folds = run_one(X, y, B=B, rng=np.random.default_rng(SEED))
-            # 分块汇总
+            # block-level summary
             covG = np.mean([f["cov_G"] for f in folds])
             covS = np.mean([f["cov_S"] for f in folds])
             wG = np.mean([f["width_G"] for f in folds])
@@ -297,7 +302,7 @@ def real_run(domains=("YRD4", "EastChina", "Nationwide"), N_TARGET=2600, B=3, wi
                        tG_mean=round(np.mean([f["t_G"] for f in folds]), 4),
                        secs=round(time.time() - t0, 1))
             write_row(path, row)
-            # 逐折也写一份
+            # also write per-fold rows
             for f in folds:
                 write_row(os.path.join(OUT, "results_byfold.csv"),
                           dict(domain=dname, prep=prep, **f))

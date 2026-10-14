@@ -111,7 +111,7 @@
     "chart": "Fig1",
     "yrd4_n_all": 3053,
     "yrd4_spacing_km": 21.67,
-    "note": "Fig 1 图注与面板引用这两个数；与图件生成脚本同源。"
+    "note": "The two numbers used in the Fig 1 caption and panel references; same source as the figure-generation scripts."
   },
   "step1b_identifiability": {
     "EastChina_m35": {
